@@ -94,7 +94,7 @@ lang="${lang}">
 <%def name="html_feedlinks()">
     %if rss_link:
         ${rss_link}
-    %elif generate_rss:
+    %elif feed_rss:
         %if len(translations) > 1:
             %for language in sorted(translations):
                 <link rel="alternate" type="application/rss+xml" title="RSS (${language})" href="${_link('rss', None, language)}">
@@ -103,7 +103,7 @@ lang="${lang}">
             <link rel="alternate" type="application/rss+xml" title="RSS" href="${_link('rss', None)}">
         %endif
     %endif
-    %if generate_atom:
+    %if feed_atom:
         %if len(translations) > 1:
             %for language in sorted(translations):
                 <link rel="alternate" type="application/atom+xml" title="Atom (${language})" href="${_link('index_atom', None, language)}">
