@@ -14,11 +14,18 @@
 
 <%block name="extra_head">
     ${parent.extra_head()}
-    %if len(translations) > 1 and generate_atom:
+    %if len(translations) > 1 and feed_atom:
         %for language in sorted(translations):
-            <link rel="alternate" type="application/atom+xml" title="Atom for the ${tag|h} section (${language})" href="${_link(kind + "_atom", tag, language)}">
+            <link rel="alternate" type="application/atom+xml" title="Atom for the ${tag|h} section (${language})" href="${_link(kind + '_atom', tag, language)}">
         %endfor
-    %elif generate_atom:
-        <link rel="alternate" type="application/atom+xml" title="Atom for the ${tag|h} section" href="${_link("tag" + "_atom", tag)}">
+    %elif feed_atom:
+        <link rel="alternate" type="application/atom+xml" title="Atom for the ${tag|h} section" href="${_link(kind + _atom', tag)}">
+    %endif
+    %if len(translations) > 1 and feed_rss:
+        %for language in sorted(translations):
+            <link rel="alternate" type="application/rss+xml" title="RSS for the ${tag|h} section (${language})" href="${_link(kind + '_rss', tag, language)}">
+        %endfor
+    %elif feed_rss:
+        <link rel="alternate" type="application/rss+xml" title="RSS for the ${tag|h} section" href="${_link(kind + _rss', tag)}">
     %endif
 </%block>

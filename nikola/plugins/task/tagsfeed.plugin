@@ -1,0 +1,13 @@
+[Core]
+Name = render_tagsfeed
+Module = tagsfeed
+
+[Documentation]
+Author = IGARASHI Masanao
+Version = 1.0
+Website = https://getnikola.com
+Description = Render the tag pages and feeds.
+
+[Nikola]
+plugincategory = Task
+
