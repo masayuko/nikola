@@ -43,11 +43,11 @@ from lxml.html import fragment_fromstring
 import lxml.etree
 import html5lib
 from feedgen.feed import FeedGenerator
-
 from . import utils
 
 xml_dec_line = '<?xml version="1.0" encoding="utf-8"?>\n'
 xsl_line = '<?xml-stylesheet type="text/xsl" href="{0}" media="all"?>\n'
+
 
 class FeedUtil(object):
 
@@ -198,10 +198,42 @@ class FeedUtil(object):
         if feed_push:
             links.append({'href': feed_push, 'rel': 'hub'})
 
+        if atom_nextlink is not None:
+            links.append({'href': urljoin(base_url, atom_nextlink.lstrip('/')),
+                          'rel': 'next'})
+        if atom_prevlink is not None:
+            links.append({'href': urljoin(base_url, atom_prevlink.lstrip('/')),
+                          'rel': 'previous'})
+        if atom_firstlink is not None:
+            links.append({'href': urljoin(base_url, atom_firstlink.lstrip('/')),
+                          'rel': 'first'})
+        if atom_lastlink is not None:
+            links.append({'href': urljoin(base_url, atom_lastlink.lstrip('/')),
+                          'rel': 'last'})
+
         fg.link(links)
 
         if rss_output_name:
             fg.rss_atom_link_self(rss_feed_url)
+            rss_links = []
+            if rss_nextlink is not None:
+                rss_links.append({'href': urljoin(base_url,
+                                                  rss_nextlink.lstrip('/')),
+                                  'rel': 'next'})
+            if rss_prevlink is not None:
+                rss_links.append({'href': urljoin(base_url,
+                                                  rss_prevlink.lstrip('/')),
+                                  'rel': 'previous'})
+            if rss_firstlink is not None:
+                rss_links.append({'href': urljoin(base_url,
+                                                  rss_firstlink.lstrip('/')),
+                                  'rel': 'first'})
+            if rss_lastlink is not None:
+                rss_links.append({'href': urljoin(base_url,
+                                                  rss_lastlink.lstrip('/')),
+                                  'rel': 'last'})
+            if len(rss_links):
+                fg.rss_atom_link(rss_links)
 
         for post in timeline:
             entry_date = self._tzdatetime(post.date)

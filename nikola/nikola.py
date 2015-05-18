@@ -72,6 +72,7 @@ from .plugin_categories import (
     ConfigPlugin,
     PostScanner,
 )
+from .feedutil import FeedUtil
 
 if DEBUG:
     logging.basicConfig(level=logging.DEBUG)
@@ -453,9 +454,12 @@ class Nikola(object):
             'REDIRECTIONS': [],
             'ROBOTS_EXCLUSIONS': [],
             'GENERATE_ATOM': False,
+            'FEED_ENCLOSURE': 'link',
             'FEED_TEASERS': True,
             'FEED_PLAIN': False,
             'FEED_PREVIEWIMAGE': True,
+            'FEED_PREVIEWIMAGE_DEFAULT': None,
+            'FEED_PUSH': None,
             'FEED_READ_MORE_LINK': DEFAULT_FEED_READ_MORE_LINK,
             'FEED_LINKS_APPEND_QUERY': False,
             'GENERATE_RSS': True,
@@ -728,6 +732,23 @@ class Nikola(object):
         self.default_lang = self.config['DEFAULT_LANG']
         self.translations = self.config['TRANSLATIONS']
 
+        if not 'FEEDGEN' in self.config:
+            self.config['FEEDGEN'] = False
+        if self.config['FEEDGEN']:
+            self.feedutil = FeedUtil(self)
+            self.config['DISABLED_PLUGINS'].append('generate_rss')
+            self.config['DISABLED_PLUGINS'].append('render_indexes')
+            self.config['DISABLED_PLUGINS'].append('render_tags')
+            self.config['FEED_RSS'] = self.config.get('FEED_RSS', True)
+            self.config['FEED_ATOM'] = self.config.get('FEED_ATOM', True)
+            self.config['FEED_ENCLOSURE'] = self.config.get('FEED_ENCLOSURE', 'link')
+            self.config['FEED_DEFAULT_IMAGE'] = self.config.get('FEED_PREVIEWIMAGE_DEFAULT', None)
+            self.config['FEED_PUSH'] = self.config.get('FEED_PUSH', None)
+        else:
+            self.config['DISABLED_PLUGINS'].append('generate_feed')
+            self.config['DISABLED_PLUGINS'].append('render_indexesfeed')
+            self.config['DISABLED_PLUGINS'].append('render_tagsfeed')
+
         locale_fallback, locale_default, locales = sanitized_locales(
             self.config.get('LOCALE_FALLBACK', None),
             self.config.get('LOCALE_DEFAULT', None),
@@ -985,6 +1006,12 @@ class Nikola(object):
         self._GLOBAL_CONTEXT['posts_section_from_meta'] = self.config.get('POSTS_SECTION_FROM_META')
         self._GLOBAL_CONTEXT['posts_section_name'] = self.config.get('POSTS_SECTION_NAME')
         self._GLOBAL_CONTEXT['posts_section_title'] = self.config.get('POSTS_SECTION_TITLE')
+        if self.config.get('FEEDGEN') is not None and self.config.get('FEEDGEN'):
+            self._GLOBAL_CONTEXT['feed_atom'] = self.config.get('FEED_ATOM')
+            self._GLOBAL_CONTEXT['feed_rss'] = self.config.get('FEED_RSS')
+        else:
+            self._GLOBAL_CONTEXT['feed_atom'] = self.config.get('GENERATE_ATOM')
+            self._GLOBAL_CONTEXT['feed_rss'] = self.config.get('GENERATE_RSS')
 
         # IPython theme configuration.  If a website has ipynb enabled in post_pages
         # we should enable the IPython CSS (leaving that up to the theme itself).
@@ -1919,7 +1946,6 @@ class Nikola(object):
             feed_append_query = self.config["FEED_LINKS_APPEND_QUERY"].format(
                 feedRelUri=context["feedlink"],
                 feedFormat="atom")
-
         def atom_post_text(post, text):
             if not self.config["FEED_PLAIN"]:
                 if self.config["FEED_PREVIEWIMAGE"] and 'previewimage' in post.meta[lang] and post.meta[lang]['previewimage'] not in text:
@@ -2035,6 +2061,15 @@ class Nikola(object):
         kw['generate_atom'] = self.config["GENERATE_ATOM"]
         kw['feed_link_append_query'] = self.config["FEED_LINKS_APPEND_QUERY"]
         kw['currentfeed'] = None
+        if self.config['FEEDGEN']:
+            kw['feed_atom'] = self.config['FEED_ATOM']
+            kw['feed_rss'] = self.config['FEED_RSS']
+            kw['feed_enclosure'] = self.config['FEED_ENCLOSURE']
+            kw['feed_previewimage_default'] = self.config['FEED_PREVIEWIMAGE_DEFAULT']
+            kw['feed_push'] = self.config['FEED_PUSH']
+            kw['blog_description'] = self.config['BLOG_DESCRIPTION']
+            kw['site_url'] = self.config['SITE_URL']
+            kw['base_url'] = self.config['BASE_URL']
 
         # Split in smaller lists
         lists = []
@@ -2049,6 +2084,36 @@ class Nikola(object):
                 lists.append(posts[:kw["index_display_post_count"]])
                 posts = posts[kw["index_display_post_count"]:]
         num_pages = len(lists)
+        if self.config['FEEDGEN'] and (kw['feed_atom'] or kw['feed_rss']):
+            description = context_source.get('description', None)
+            if description is None:
+                description = kw['blog_description'](lang)
+            atom_firstlink = None
+            atom_lastlink = None
+            rss_firstlink = None
+            rss_lastlink = None
+            if num_pages > 1:
+                if kw['indexes_static']:
+                    first = 0
+                    last = 1
+                else:
+                    first = num_pages - 1
+                    last = 0
+                firstpages_i = utils.get_displayed_page_number(first, num_pages,
+                                                               self)
+                lastpages_i = utils.get_displayed_page_number(last, num_pages,
+                                                              self)
+                if kw['feed_atom']:
+                    atom_firstlink = page_link(first, firstpages_i, num_pages,
+                                               False, extension="-atom.xml")
+                    atom_lastlink = page_link(last, lastpages_i, num_pages,
+                                              False, extension="-atom.xml")
+                if kw['feed_rss']:
+                    rss_firstlink = page_link(first, firstpages_i, num_pages,
+                                              False, extension="-rss.xml")
+                    rss_lastlink = page_link(last, lastpages_i, num_pages,
+                                             False, extension="-rss.xml")
+
         for i, post_list in enumerate(lists):
             context = context_source.copy()
             if 'pagekind' not in context:
@@ -2142,6 +2207,75 @@ class Nikola(object):
                     "uptodate": [utils.config_changed(kw, 'nikola.nikola.Nikola.atom_feed_renderer')] + additional_dependencies
                 }
                 yield utils.apply_filters(atom_task, kw['filters'])
+
+            if self.config['FEEDGEN'] and (kw['feed_atom'] or kw['feed_rss']):
+                targets = []
+                atom_path = None
+                atom_output_name = None
+                atom_prevlink = None
+                atom_nextlink = None
+                if kw['feed_atom']:
+                    atom_path = page_link(i, ipages_i, num_pages, False,
+                                          extension="-atom.xml")
+                    atom_output_name = os.path.join(kw['output_folder'],
+                                                    atom_path.lstrip('/'))
+                    if prevlink is not None:
+                        atom_prevlink = page_link(
+                            prevlink,
+                            utils.get_displayed_page_number(prevlink, num_pages,
+                                                            self),
+                            num_pages, False, extension="-atom.xml")
+                    if nextlink is not None:
+                        atom_nextlink = page_link(
+                            nextlink,
+                            utils.get_displayed_page_number(nextlink, num_pages,
+                                                            self),
+                            num_pages, False, extension="-atom.xml")
+                    targets.append(atom_output_name)
+
+                rss_path = None
+                rss_output_name = None
+                rss_prevlink = None
+                rss_nextlink = None
+                if kw['feed_rss']:
+                    rss_path = page_link(i, ipages_i, num_pages, False,
+                                         extension="-rss.xml")
+                    rss_output_name = os.path.join(kw['output_folder'],
+                                                   rss_path.lstrip('/'))
+                    if prevlink is not None:
+                        rss_prevlink = page_link(
+                            prevlink,
+                            utils.get_displayed_page_number(prevlink, num_pages,
+                                                            self),
+                            num_pages, False, extension="-rss.xml")
+                    if nextlink is not None:
+                        rss_nextlink = page_link(
+                            nextlink,
+                            utils.get_displayed_page_number(nextlink, num_pages,
+                                                            self),
+                            num_pages, False, extension="-rss.xml")
+                    targets.append(rss_output_name)
+
+                feed_task = {
+                    'basename': basename,
+                    'name': lang + ':' + ':'.join(targets),
+                    'actions': [(self.feedutil.gen_feed_generator,
+                                 (lang, post_list, urljoin(
+                                     kw['base_url'],
+                                     context["permalink"].lstrip('/')),
+                                  indexes_title, description,
+                                  atom_output_name, atom_path,
+                                  rss_output_name, rss_path,
+                                  atom_nextlink, atom_prevlink,
+                                  atom_firstlink, atom_lastlink,
+                                  rss_nextlink, rss_prevlink,
+                                  rss_firstlink, rss_lastlink))],
+                    'targets': targets,
+                    'file_dep': [output_name],
+                    'clean': True,
+                    'uptodate': [utils.config_changed(kw, 'nikola.nikola.Nikola.gen_feed_generator')] + additional_dependencies
+                }
+                yield feed_task
 
         if kw["indexes_pages_main"] and kw['indexes_prety_page_url'](lang):
             # create redirection
