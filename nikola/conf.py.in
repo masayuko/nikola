@@ -1073,3 +1073,13 @@ GLOBAL_CONTEXT = {}
 # GLOBAL_CONTEXT as parameter when the template is about to be
 # rendered
 GLOBAL_CONTEXT_FILLER = []
+
+# Enable feedgen modify
+FEEDGEN = True
+#FEED_RSS = True
+#FEED_ATOM = True
+# link or media
+#FEED_ENCLOSURE = 'link'
+#FEED_DEFAULT_IMAGE = None
+# PubSubHubbub url
+#FEED_PUSH = None
