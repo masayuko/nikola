@@ -326,10 +326,36 @@ class RenderTagsF(Task):
         kind = "category" if is_category else "tag"
 
         def page_link(i, displayed_i, num_pages, force_addition, extension=None):
-            return utils.adjust_name_for_index_link(self.site.link(kind, tag, lang), i, displayed_i, lang, self.site, force_addition, extension)
+            if extension == '.atom' or extension == '-atom.xml':
+                return utils.adjust_name_for_index_link(
+                    self.site.link(kind + '_atom', tag, lang),
+                    i, displayed_i, lang, self.site, force_addition,
+                    extension='-atom.xml')
+            elif extension == '-rss.xml':
+                return utils.adjust_name_for_index_link(
+                    self.site.link(kind + '_rss', tag, lang),
+                    i, displayed_i, lang, self.site, force_addition,
+                    extension=extension)
+            else:
+                return utils.adjust_name_for_index_link(
+                    self.site.link(kind, tag, lang),
+                    i, displayed_i, lang, self.site, force_addition, extension)
 
         def page_path(i, displayed_i, num_pages, force_addition, extension=None):
-            return utils.adjust_name_for_index_path(self.site.path(kind, tag, lang), i, displayed_i, lang, self.site, force_addition, extension)
+            if extension == '.atom' or extension == '-atom.xml':
+                return utils.adjust_name_for_index_path(
+                    self.site.link(kind + '_atom', tag, lang),
+                    i, displayed_i, lang, self.site, force_addition,
+                    extension='-atom.xml')
+            elif extension == '-rss.xml':
+                return utils.adjust_name_for_index_path(
+                    self.site.link(kind + '_rss', tag, lang),
+                    i, displayed_i, lang, self.site, force_addition,
+                    extension=extension)
+            else:
+                return utils.adjust_name_for_index_path(
+                    self.site.link(kind, tag, lang),
+                    i, displayed_i, lang, self.site, force_addition, extension)
 
         context_source = {}
         if kw["feed_rss"]:

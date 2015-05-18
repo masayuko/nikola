@@ -31,6 +31,7 @@ except ImportError:
     from urllib.parse import urljoin  # NOQA
 import io
 import uuid
+import mimetypes
 from datetime import datetime
 import dateutil.tz
 import lxml.html
@@ -39,8 +40,8 @@ import lxml.etree
 import html5lib
 from feedgen.feed import FeedGenerator
 
-from nikola import utils
-from nikola.nikola import _enclosure
+from . import utils
+
 
 xml_dec_line = '<?xml version="1.0" encoding="utf-8"?>\n'
 xsl_line = '<?xml-stylesheet type="text/xsl" href="{0}" media="all"?>\n'
@@ -67,6 +68,14 @@ class FeedUtil(object):
             rss_file.write(xml_dec_line)
             rss_file.write(xsl_line.format(xsl_stylesheet_href))
             rss_file.write(fg.rss_str(pretty=pretty))
+
+    def _enclosure(self, post, lang):
+        enclosure = post.meta('enclosure', lang)
+        if enclosure:
+            length = 0
+            url = enclosure
+            mime = mimetypes.guess_type(url)[0]
+            return url, length, mime
 
     def get_feed_content(self, data, lang, post, enclosure_details,
                          default_image=None):
@@ -121,7 +130,10 @@ class FeedUtil(object):
 
     def gen_feed_generator(self, lang, timeline, altlink, title, subtitle,
                            atom_output_name, atom_path, rss_output_name,
-                           rss_path):
+                           rss_path, atom_nextlink=None, atom_prevlink=None,
+                           atom_firstlink=None, atom_lastlink=None,
+                           rss_nextlink=None, rss_prevlink=None,
+                           rss_firstlink=None, rss_lastlink=None):
         config = self.site.config
         base_url = config["BASE_URL"]
         feed_links_append_query = config["FEED_LINKS_APPEND_QUERY"]
@@ -154,12 +166,46 @@ class FeedUtil(object):
         fg.title(title=title, type=None, cdata=False)
         fg.subtitle(subtitle=subtitle, type=None, cdata=False)
         fg.author({'name': blog_author})
-        fg.link([{'href': altlink, 'rel': 'alternate'},
-                 {'href': atom_feed_url, 'rel': 'self'}])
+        links = [{'href': altlink, 'rel': 'alternate'},
+                 {'href': atom_feed_url, 'rel': 'self'}]
         if feed_push:
-            fg.link({'href': feed_push, 'rel': 'hub'})
+            links.append({'href': feed_push, 'rel': 'hub'})
+
+        if atom_nextlink is not None:
+            links.append({'href': urljoin(base_url, atom_nextlink.lstrip('/')),
+                          'rel': 'next'})
+        if atom_prevlink is not None:
+            links.append({'href': urljoin(base_url, atom_prevlink.lstrip('/')),
+                          'rel': 'previous'})
+        if atom_firstlink is not None:
+            links.append({'href': urljoin(base_url, atom_firstlink.lstrip('/')),
+                          'rel': 'first'})
+        if atom_lastlink is not None:
+            links.append({'href': urljoin(base_url, atom_lastlink.lstrip('/')),
+                          'rel': 'last'})
+        fg.link(links)
+
         if rss_output_name:
             fg.rss_atom_link_self(rss_feed_url)
+            rss_links = []
+            if rss_nextlink is not None:
+                rss_links.append({'href': urljoin(base_url,
+                                                  rss_nextlink.lstrip('/')),
+                                  'rel': 'next'})
+            if rss_prevlink is not None:
+                rss_links.append({'href': urljoin(base_url,
+                                                  rss_prevlink.lstrip('/')),
+                                  'rel': 'previous'})
+            if rss_firstlink is not None:
+                rss_links.append({'href': urljoin(base_url,
+                                                  rss_firstlink.lstrip('/')),
+                                  'rel': 'first'})
+            if rss_lastlink is not None:
+                rss_links.append({'href': urljoin(base_url,
+                                                  rss_lastlink.lstrip('/')),
+                                  'rel': 'last'})
+            if len(rss_links):
+                fg.rss_atom_link(rss_links)
 
         def tzdatetime(dt):
             if dt.tzinfo is None:
@@ -195,7 +241,7 @@ class FeedUtil(object):
 
             # enclosure callback returns None if post has no enclosure, or a
             # 3-tuple of (url, length (0 is valid), mimetype)
-            enclosure_details = _enclosure(post=post, lang=lang)
+            enclosure_details = self._enclosure(post=post, lang=lang)
             if enclosure_details is not None:
                 feed_enclosure = config["FEED_ENCLOSURE"]
                 if feed_enclosure == 'link':
