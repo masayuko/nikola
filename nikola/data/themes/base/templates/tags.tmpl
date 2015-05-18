@@ -14,7 +14,7 @@
             % for i in range(indent_change_before):
                 <ul class="postlist">
             % endfor
-            <li><a class="reference" href="${link}">${text}</a>
+            <li><a class="reference" href="${link}">${text|h}</a>
             % if indent_change_after <= 0:
                 </li>
             % endif

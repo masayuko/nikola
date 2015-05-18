@@ -3,11 +3,18 @@
 
 <%block name="extra_head">
     ${parent.extra_head()}
-    %if len(translations) > 1 and generate_rss:
+    %if len(translations) > 1 and feed_atom:
         %for language in sorted(translations):
-            <link rel="alternate" type="application/rss+xml" title="RSS for ${kind} ${tag|h} (${language})" href="${_link(kind + "_rss", tag, language)}">
+            <link rel="alternate" type="application/atom+xml" title="Atom for ${kind} ${tag|h} (${language})" href="${_link(kind + '_atom', tag, language)}">
         %endfor
-    %elif generate_rss:
+    %elif feed_atom:
+        <link rel="alternate" type="application/atom+xml" title="Atom for ${kind} ${tag|h}" href="${_link(kind + "_atom", tag)}">
+    %endif
+    %if len(translations) > 1 and feed_rss:
+        %for language in sorted(translations):
+            <link rel="alternate" type="application/rss+xml" title="RSS for ${kind} ${tag|h} (${language})" href="${_link(kind + '_rss', tag, language)}">
+        %endfor
+    %elif feed_rss:
         <link rel="alternate" type="application/rss+xml" title="RSS for ${kind} ${tag|h}" href="${_link(kind + "_rss", tag)}">
     %endif
 </%block>
@@ -29,14 +36,23 @@
         </ul>
         %endif
         <div class="metadata">
-            %if len(translations) > 1 and generate_rss:
+            %if len(translations) > 1 and feed_atom:
                 %for language in sorted(translations):
                 <p class="feedlink">
-                    <a href="${_link(kind + "_rss", tag, language)}" hreflang="${language}" type="application/rss+xml">${messages('RSS feed', language)} (${language})</a>&nbsp;
+                    <a href="${_link(kind + '_atom', tag, language)}" hreflang="${language}" type="application/atom+xml">Atom feed (${language})</a>&nbsp;
                 </p>
                 %endfor
-            %elif generate_rss:
-                <p class="feedlink"><a href="${_link(kind + "_rss", tag)}" type="application/rss+xml">${messages('RSS feed')}</a></p>
+            %elif feed_atom:
+                <p class="feedlink"><a href="${_link(kind + '_atom', tag)}" type="application/atom+xml">Atom feed</a></p>
+            %endif
+            %if len(translations) > 1 and feed_rss:
+                %for language in sorted(translations):
+                <p class="feedlink">
+                    <a href="${_link(kind + '_rss', tag, language)}" hreflang="${language}" type="application/rss+xml">${messages('RSS feed', language)} (${language})</a>&nbsp;
+                </p>
+                %endfor
+            %elif feed_rss:
+                <p class="feedlink"><a href="${_link(kind + '_rss', tag)}" type="application/rss+xml">${messages('RSS feed')}</a></p>
             %endif
         </div>
     </header>
