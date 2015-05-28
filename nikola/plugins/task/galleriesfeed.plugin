@@ -1,0 +1,13 @@
+[Core]
+Name = render_galleriesfeed
+Module = galleriesfeed
+
+[Documentation]
+Author = Roberto Alsina
+Version = 1.0
+Website = https://getnikola.com
+Description = Create image galleries automatically.
+
+[Nikola]
+plugincategory = Task
+
