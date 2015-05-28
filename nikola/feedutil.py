@@ -43,6 +43,7 @@ from lxml.html import fragment_fromstring
 import lxml.etree
 import html5lib
 from feedgen.feed import FeedGenerator
+from .image_processing import ImageProcessor
 from . import utils
 
 xml_dec_line = '<?xml version="1.0" encoding="utf-8"?>\n'
@@ -327,6 +328,136 @@ class FeedUtil(object):
                                                      preview_image,
                                                      default_image)
                         fe.rss_content(content=data, cdata=True)
+
+        if atom_output_name:
+            self.atom_renderer(fg, atom_output_name, atom_path,
+                               self.site.url_replacer(atom_path,
+                                                      "/assets/xml/atom.xsl"))
+        if rss_output_name:
+            self.rss_renderer(fg, rss_output_name, rss_path,
+                              self.site.url_replacer(rss_path,
+                                                     "/assets/xml/rss.xsl"))
+
+    def gallery_feed_generator(self, lang,
+                               img_list, dest_img_list, img_titles,
+                               image_processor,
+                               altlink, title, subtitle,
+                               atom_output_name, atom_path, rss_output_name,
+                               rss_path, atom_nextlink=None, atom_prevlink=None,
+                               atom_firstlink=None, atom_lastlink=None,
+                               rss_nextlink=None, rss_prevlink=None,
+                               rss_firstlink=None, rss_lastlink=None):
+        """Generate feed tasks for gallery."""
+        config = self.site.config
+        base_url = config["BASE_URL"]
+        feed_links_append_query = config["FEED_LINKS_APPEND_QUERY"]
+        blog_author = config["BLOG_AUTHOR"](lang)
+        feed_push = config["FEED_PUSH"]
+
+        if atom_output_name:
+            atom_feed_url = urljoin(base_url, atom_path.lstrip('/'))
+            atom_append_query = None
+            if feed_links_append_query:
+                atom_append_query = feed_links_append_query.format(
+                    feedRelUri=atom_path, feedFormat='atom')
+            feed_id = self.gen_uuid(atom_feed_url)
+        else:
+            atom_feed_url = None
+            feed_id = None
+
+        if rss_output_name:
+            rss_feed_url = urljoin(base_url, rss_path.lstrip('/'))
+            rss_append_query = None
+            if feed_links_append_query:
+                rss_append_query = feed_links_append_query.format(
+                    feedRelUri=rss_path, feedFormat='rss')
+
+        fg = FeedGenerator()
+        fg.load_extension('dc', atom=False,rss=True)
+        fg.id(feed_id)
+        fg.updated(datetime.now(dateutil.tz.tzutc()))
+        fg.title(title=title, type=None, cdata=False)
+        fg.subtitle(subtitle=subtitle, type=None, cdata=False)
+        fg.author({'name': blog_author})
+        links = [{'href': altlink, 'rel': 'alternate'}]
+        if atom_feed_url:
+            links.append({'href': atom_feed_url, 'rel': 'self'})
+
+        if feed_push:
+            links.append({'href': feed_push, 'rel': 'hub'})
+
+        if atom_nextlink is not None:
+            links.append({'href': urljoin(base_url, atom_nextlink.lstrip('/')),
+                          'rel': 'next'})
+        if atom_prevlink is not None:
+            links.append({'href': urljoin(base_url, atom_prevlink.lstrip('/')),
+                          'rel': 'previous'})
+        if atom_firstlink is not None:
+            links.append({'href': urljoin(base_url, atom_firstlink.lstrip('/')),
+                          'rel': 'first'})
+        if atom_lastlink is not None:
+            links.append({'href': urljoin(base_url, atom_lastlink.lstrip('/')),
+                          'rel': 'last'})
+        fg.link(links)
+
+        if rss_output_name:
+            fg.rss_atom_link_self(rss_feed_url)
+            rss_links = []
+            if rss_nextlink is not None:
+                rss_links.append({'href': urljoin(base_url,
+                                                  rss_nextlink.lstrip('/')),
+                                  'rel': 'next'})
+            if rss_prevlink is not None:
+                rss_links.append({'href': urljoin(base_url,
+                                                  rss_prevlink.lstrip('/')),
+                                  'rel': 'previous'})
+            if rss_firstlink is not None:
+                rss_links.append({'href': urljoin(base_url,
+                                                  rss_firstlink.lstrip('/')),
+                                  'rel': 'first'})
+            if rss_lastlink is not None:
+                rss_links.append({'href': urljoin(base_url,
+                                                  rss_lastlink.lstrip('/')),
+                                  'rel': 'last'})
+            if len(rss_links):
+                fg.rss_atom_link(rss_links)
+
+        for img, srcimg, imgtitle in zip(dest_img_list, img_list, img_titles):
+            entry_date = self._tzdatetime(image_processor.image_date(srcimg))
+
+            img_url = urljoin(self.site.config['BASE_URL'], img.lstrip('/'))
+
+            entry_id = self.gen_uuid(img_url)
+            fe = fg.add_entry()
+            fe.id(entry_id)
+            fe.title(title=imgtitle, type='text', cdata=False)
+            fe.updated(entry_date)
+            fe.published(entry_date)
+
+            img_size = os.stat(img).st_size
+
+            feed_enclosure = config["FEED_ENCLOSURE"]
+            if feed_enclosure is not None and feed_enclosure == 'media':
+                fg.load_extension('media', atom=True, rss=True)
+                fe.media.add_content({
+                    'url': img_url,
+                    'type': mimetypes.guess_type(img)[0],
+                    'fileSize': str(img_size),
+                    'medium': 'image',
+                })
+            else:
+                fe.link([{
+                    'href': img_url,
+                    'length': str(img_size),
+                    'type': mimetypes.guess_type(img)[0],
+                    'rel': 'enclosure'
+                }])
+
+            if atom_output_name:
+                fe.link([{'href': img_url, 'rel': 'alternate'}])
+
+            if rss_output_name:
+                fe.rss_link(img_url)
 
         if atom_output_name:
             self.atom_renderer(fg, atom_output_name, atom_path,
