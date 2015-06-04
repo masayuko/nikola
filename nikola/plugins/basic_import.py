@@ -40,6 +40,7 @@ except ImportError:
     from urllib.parse import urlparse  # NOQA
 
 from lxml import etree, html
+import html5lib
 from mako.template import Template
 
 from nikola import utils
@@ -126,7 +127,9 @@ class ImportMixin(object):
     def write_content(cls, filename, content, rewrite_html=True):
         """Write content to file."""
         if rewrite_html:
-            doc = html.document_fromstring(content)
+            doc = html5lib.html5parser.parse(content, treebuilder='lxml',
+                                             namespaceHTMLElements=False)
+            doc = html.document_fromstring(lxml.html.tostring(doc))
             doc.rewrite_links(replacer)
             content = html.tostring(doc, encoding='utf8')
         else:

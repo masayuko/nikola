@@ -45,6 +45,7 @@ from . import utils
 
 import dateutil.tz
 import lxml.html
+import html5lib
 import natsort
 try:
     import pyphen
@@ -583,7 +584,10 @@ class Post(object):
         if self.compiler.extension() == '.php':
             return data
         try:
-            document = lxml.html.fragment_fromstring(data, "body")
+            document = html5lib.html5parser.parse(data, treebuilder='lxml',
+                                                  namespaceHTMLElements=False)
+            document = lxml.html.fragment_fromstring(
+                lxml.html.tostring(document), "body")
         except lxml.etree.ParserError as e:
             # if we don't catch this, it breaks later (Issue #374)
             if str(e) == "Document is empty":
@@ -680,7 +684,10 @@ class Post(object):
             with io.open(file_name, "r", encoding="utf8") as post_file:
                 data = post_file.read().strip()
             try:
-                document = lxml.html.fragment_fromstring(data, "body")
+                document = html5lib.html5parser.parse(
+                    data, treebuilder='lxml', namespaceHTMLElements=False)
+                document = lxml.html.fragment_fromstring(
+                    lxml.html.tostring(document), "body")
             except lxml.etree.ParserError as e:
                 # if we don't catch this, it breaks later (Issue #374)
                 if str(e) == "Document is empty":
@@ -698,7 +705,11 @@ class Post(object):
         if self._remaining_paragraph_count is None:
             try:
                 # Just asking self.text() is easier here.
-                document = lxml.html.fragment_fromstring(self.text(teaser_only=True, show_read_more_link=False), "body")
+                document = html5lib.html5parser.parse(
+                    self.text(teaser_only=True, show_read_more_link=False),
+                    treebuilder='lxml', namespaceHTMLElements=False)
+                document = lxml.html.fragment_fromstring(
+                    lxml.html.tostring(document), "body")
             except lxml.etree.ParserError as e:
                 # if we don't catch this, it breaks later (Issue #374)
                 if str(e) == "Document is empty":
