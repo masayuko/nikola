@@ -29,17 +29,17 @@
 from __future__ import unicode_literals
 import io
 import os
-
 import docutils.core
 import docutils.nodes
 import docutils.utils
 import docutils.io
 import docutils.readers.standalone
-import docutils.writers.html4css1
+import htmlwriter
 
 from nikola.plugin_categories import PageCompiler
 from nikola.utils import unicode_str, get_logger, makedirs, write_metadata, STDERR_HANDLER
 
+_htmlwriter = htmlwriter.Writer()
 
 class CompileRest(PageCompiler):
 
@@ -227,9 +227,9 @@ def add_node(node, visit_function=None, depart_function=None):
     """
     docutils.nodes._add_node_class_names([node.__name__])
     if visit_function:
-        setattr(docutils.writers.html4css1.HTMLTranslator, 'visit_' + node.__name__, visit_function)
+        setattr(htmlwriter.HTMLTranslator, 'visit_' + node.__name__, visit_function)
     if depart_function:
-        setattr(docutils.writers.html4css1.HTMLTranslator, 'depart_' + node.__name__, depart_function)
+        setattr(htmlwriter.HTMLTranslator, 'depart_' + node.__name__, depart_function)
 
 
 def rst2html(source, source_path=None, source_class=docutils.io.StringInput,
@@ -263,6 +263,9 @@ def rst2html(source, source_path=None, source_class=docutils.io.StringInput,
         # add_ln   amount of metadata lines (see comment in compile_html above)
         reader.l_settings = {'logger': logger, 'source': source_path,
                              'add_ln': l_add_ln}
+
+    if writer is None:
+        writer = _htmlwriter
 
     pub = docutils.core.Publisher(reader, parser, writer, settings=settings,
                                   source_class=source_class,
