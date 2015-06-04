@@ -53,6 +53,7 @@ import logging
 import PyRSS2Gen as rss
 import lxml.etree
 import lxml.html
+import html5lib
 from yapsy.PluginManager import PluginManager
 from blinker import signal
 
@@ -1156,7 +1157,9 @@ class Nikola(object):
 
         utils.makedirs(os.path.dirname(output_name))
         parser = lxml.html.HTMLParser(remove_blank_text=True)
-        doc = lxml.html.document_fromstring(data, parser)
+        doc = html5lib.html5parser.parse(data, treebuilder='lxml',
+                                         namespaceHTMLElements=False)
+        doc = lxml.html.document_fromstring(lxml.html.tostring(doc), parser)
         self.rewrite_links(doc, src, context['lang'])
         data = b'<!DOCTYPE html>\n' + lxml.html.tostring(doc, encoding='utf8', method='html', pretty_print=True)
         with open(output_name, "wb+") as post_file:

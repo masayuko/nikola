@@ -30,6 +30,7 @@ from __future__ import unicode_literals, print_function
 
 import io
 import lxml.html
+import html5lib
 from pkg_resources import resource_filename
 from mako.template import Template
 from nikola.plugin_categories import Command
@@ -62,7 +63,9 @@ class CommandRst2Html(Command):
         template = Template(filename=template_path)
         template_output = template.render(rstcss=rstcss, output=output)
         parser = lxml.html.HTMLParser(remove_blank_text=True)
-        doc = lxml.html.document_fromstring(template_output, parser)
+        doc = html5lib.html5parser.parse(template_output, treebuilder='lxml',
+                                         namespaceHTMLElements=False)
+        doc = lxml.html.document_fromstring(lxml.html.tostring(doc), parser)
         html = b'<!DOCTYPE html>\n' + lxml.html.tostring(doc, encoding='utf8', method='html', pretty_print=True)
         print(html.decode('utf-8'))
         if error_level < 3:
