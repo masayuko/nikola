@@ -66,6 +66,8 @@ from unidecode import unidecode
 from unicodedata import normalize as unicodenormalize
 from pkg_resources import resource_filename
 from doit.cmdparse import CmdParse
+import janome.tokenizer
+import romkan
 
 from nikola import DEBUG
 
@@ -754,7 +756,11 @@ def slugify(value, force=False):
     if USE_SLUGIFY or force:
         # This is the standard state of slugify, which actually does some work.
         # It is the preferred style, especially for Western languages.
-        value = unicode_str(unidecode(value))
+        lang = LocaleBorg().current_lang
+        if lang == 'ja':
+            value = unidecodeja(value)
+        else:
+            value = unicode_str(unidecode(value))
         value = _slugify_strip_re.sub('', value, re.UNICODE).strip().lower()
         return _slugify_hyphenate_re.sub('-', value, re.UNICODE)
     else:
@@ -1857,3 +1863,33 @@ def indent(text, prefix, predicate=None):
         for line in text.splitlines(True):
             yield (prefix + line if predicate(line) else line)
     return ''.join(prefixed_lines())
+
+
+def unidecodeja(s):
+    romaji = ''
+    hyp = 0
+    t = janome.tokenizer.Tokenizer()
+    for token in t.tokenize(s):
+        if token.node_type == 'UNKNOWN':
+            r = token.surface
+        else:
+            r = romkan.to_roma(token.reading)
+        pos = token.part_of_speech.split(',')
+        if pos[0] == '助動詞':
+            romaji += r
+            hyp = 1
+        else:
+            if (pos[0] == '記号' and
+                (pos[1] == '読点' or pos[1] == '句点' or pos[1] == '空白')):
+                hyp = 1
+            else:
+                if hyp == 1:
+                    romaji += '-{}'.format(r)
+                    hyp = 2
+                else:
+                    romaji += r
+                    if pos[0] == '助詞':
+                        hyp = 1
+                    else:
+                        hyp = 2
+    return romaji
