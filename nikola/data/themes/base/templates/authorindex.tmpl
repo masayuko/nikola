@@ -3,11 +3,18 @@
 
 <%block name="extra_head">
     ${parent.extra_head()}
-    %if len(tranlations) > 1 and generate_atom:
+    %if len(tranlations) > 1 and feed_atom:
         %for language in sorted(translations):
-            <link rel="alternate" type="application/atom+xml" title="Atom for the ${author|h} section (${language})" href="${_link(kind + "_atom", author, language)}">
+            <link rel="alternate" type="application/atom+xml" title="Atom for the ${author|h} section (${language})" href="${_link(kind + '_atom', author, language)}">
         %endfor
-    %elif generate_atom:
-        <link rel="alternate" type="application/atom+xml" title="Atom for the ${author|h} section" href="${_link("author" + "_atom", author)}">
+    %elif feed_atom:
+        <link rel="alternate" type="application/atom+xml" title="Atom for the ${author|h} section" href="${_link(kind + '_atom', author)}">
+    %endif
+    %if len(tranlations) > 1 and feed_rss:
+        %for language in sorted(translations):
+            <link rel="alternate" type="application/rss+xml" title="RSS for the ${author|h} section (${language})" href="${_link(kind + '_rss', author, language)}">
+        %endfor
+    %elif feed_rss:
+        <link rel="alternate" type="application/rss+xml" title="RSS for the ${author|h} section" href="${_link(kind + '_rss', author)}">
     %endif
 </%block>
