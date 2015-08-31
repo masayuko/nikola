@@ -738,6 +738,7 @@ class Nikola(object):
             self.config['DISABLED_PLUGINS'].append('render_tags')
             self.config['DISABLED_PLUGINS'].append('render_galleries')
             self.config['DISABLED_PLUGINS'].append('render_authors')
+            self.config['DISABLED_PLUGINS'].append('render_archive')
             self.config['FEED_RSS'] = self.config.get('FEED_RSS', True)
             self.config['FEED_ATOM'] = self.config.get('FEED_ATOM', True)
             self.config['FEED_ENCLOSURE'] = self.config.get('FEED_ENCLOSURE', 'link')
@@ -749,6 +750,7 @@ class Nikola(object):
             self.config['DISABLED_PLUGINS'].append('render_tagsfeed')
             self.config['DISABLED_PLUGINS'].append('render_galleriesfeed')
             self.config['DISABLED_PLUGINS'].append('render_authorsfeed')
+            self.config['DISABLED_PLUGINS'].append('render_archivefeed')
 
         locale_fallback, locale_default, locales = sanitized_locales(
             self.config.get('LOCALE_FALLBACK', None),
