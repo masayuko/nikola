@@ -32,12 +32,11 @@ import datetime
 import dateutil.tz
 import os
 import sys
+import robotstxt
 try:
     from urlparse import urljoin, urlparse
-    import robotparser as robotparser
 except ImportError:
     from urllib.parse import urljoin, urlparse  # NOQA
-    import urllib.robotparser as robotparser  # NOQA
 
 from nikola.plugin_categories import LateTask
 from nikola.utils import apply_filters, config_changed, encodelink, get_asset_path
@@ -228,14 +227,12 @@ class Sitemap(LateTask):
                         urlset[loc] = loc_format.format(encodelink(loc), lastmod, '\n'.join(alternates))
 
         def parse_robotstxt(path):
-            robot = robotparser.RobotFileParser()
             fh = io.open(path, 'r', encoding='utf-8-sig')
             rules = fh.readlines()
             if sys.version_info[0] == 2:
                 rules = [ line.encode('utf-8') for line in rules ]
             fh.close()
-            robot.parse(rules)
-            return robot
+            return robotstxt.TestAgent(base_url, robotstxt.parse(rules))
 
         def parse_robots_exclusions(exclusions):
             """Parse rules to check fetchable."""
@@ -243,12 +240,10 @@ class Sitemap(LateTask):
             for rule in exclusions:
                 rules.append('Disallow: {0}'.format(rule))
             if len(rules):
-                robot = robotparser.RobotFileParser()
                 rules = ['User-Agent: *'] + rules
                 if sys.version_info[0] == 2:
                     rules = [ line.encode('utf-8') for line in rules ]
-                robot.parse(rules)
-                return robot
+                return robotstxt.TestAgent(base_url, robotstxt.parse(rules))
             return None
 
         def write_sitemap():
