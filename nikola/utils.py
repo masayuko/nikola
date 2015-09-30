@@ -45,14 +45,7 @@ import sys
 import dateutil.parser
 import dateutil.tz
 import logbook
-try:
-    from urllib import quote as urlquote
-    from urllib import unquote as urlunquote
-    from urlparse import urlparse, urlunparse
-except ImportError:
-    from urllib.parse import quote as urlquote  # NOQA
-    from urllib.parse import unquote as urlunquote  # NOQA
-    from urllib.parse import urlparse, urlunparse  # NOQA
+import urilib
 import warnings
 import PyRSS2Gen as rss
 from collections import defaultdict, Callable, OrderedDict
@@ -800,15 +793,7 @@ def unslugify(value, discard_numbers=True):
 
 def encodelink(iri):
     """Given an encoded or unencoded link string, return an encoded string suitable for use as a link in HTML and XML."""
-    iri = unicodenormalize('NFC', iri)
-    link = OrderedDict(urlparse(iri)._asdict())
-    link['path'] = urlquote(urlunquote(link['path']).encode('utf-8'))
-    try:
-        link['netloc'] = link['netloc'].encode('utf-8').decode('idna').encode('idna').decode('utf-8')
-    except UnicodeDecodeError:
-        link['netloc'] = link['netloc'].encode('idna').decode('utf-8')
-    encoded_link = urlunparse(link.values())
-    return encoded_link
+    return urilib.urinormalize(iri)
 
 # A very slightly safer version of zip.extractall that works on
 # python < 2.6
