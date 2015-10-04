@@ -910,6 +910,17 @@ MARKDOWN_EXTENSIONS = ['fenced_code', 'codehilite', 'extra']
 # the image source for Feedly, Apple News, Flipboard, and other popular clients.
 # FEED_PREVIEWIMAGE = True
 
+# The Image will be used as the preview image when the preview image is not
+# found in the content. Defaults to None.
+# FEED_PREVIEWIMAGE_DEFAULT = None
+
+# A Enclosure type for feeds. 'link' or 'media'
+# Defaults to 'link'
+# FEED_ENCLOSURE = 'link'
+
+# The PubSubHubbub URL for feeds. Defaults to None.
+# FEED_PUSH = None
+
 # RSS_LINK is a HTML fragment to link the RSS or Atom feeds. If set to None,
 # the base.tmpl will use the feed Nikola generates. However, you may want to
 # change it for a FeedBurner feed or something else.
