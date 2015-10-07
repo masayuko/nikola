@@ -59,25 +59,23 @@ class FeedUtil(object):
         """Setup."""
         self.site = site
 
-    def atom_renderer(self, fg, output_path, atom_path, xsl_stylesheet_href,
-                      pretty=True):
+    def atom_renderer(self, fg, output_path, atom_path, xsl_stylesheet_href):
         """Render a Atom file."""
         dst_dir = os.path.dirname(output_path)
         utils.makedirs(dst_dir)
         with io.open(output_path, 'w+', encoding='utf-8') as atom_file:
             atom_file.write(xml_dec_line)
             atom_file.write(xsl_line.format(xsl_stylesheet_href))
-            atom_file.write(fg.atom_str(pretty=pretty))
+            atom_file.write(fg.atom_str(pretty=True))
 
-    def rss_renderer(self, fg, output_path, rss_path, xsl_stylesheet_href,
-                     pretty=True):
+    def rss_renderer(self, fg, output_path, rss_path, xsl_stylesheet_href):
         """Render a RSS file."""
         dst_dir = os.path.dirname(output_path)
         utils.makedirs(dst_dir)
         with io.open(output_path, 'w+', encoding='utf-8') as rss_file:
             rss_file.write(xml_dec_line)
             rss_file.write(xsl_line.format(xsl_stylesheet_href))
-            rss_file.write(fg.rss_str(pretty=pretty))
+            rss_file.write(fg.rss_str(pretty=True))
 
     def _tzdatetime(self, dt):
         """Get a datetime for feed."""
