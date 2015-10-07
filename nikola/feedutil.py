@@ -169,12 +169,16 @@ class FeedUtil(object):
         feed_previewimage = config["FEED_PREVIEWIMAGE"]
         feed_previewimage_default = config["FEED_PREVIEWIMAGE_DEFAULT"]
 
-        atom_feed_url = urljoin(base_url, atom_path.lstrip('/'))
         if atom_output_name:
+            atom_feed_url = urljoin(base_url, atom_path.lstrip('/'))
             atom_append_query = None
             if feed_links_append_query:
                 atom_append_query = feed_links_append_query.format(
                     feedRelUri=atom_path, feedFormat='atom')
+            feed_id = self.gen_uuid(atom_feed_url)
+        else:
+            atom_feed_url = None
+            feed_id = None
 
         if rss_output_name:
             rss_feed_url = urljoin(base_url, rss_path.lstrip('/'))
@@ -183,8 +187,6 @@ class FeedUtil(object):
                 rss_append_query = feed_links_append_query.format(
                     feedRelUri=rss_path, feedFormat='rss')
 
-        feed_id = self.gen_uuid(atom_feed_url)
-
         fg = FeedGenerator()
         fg.load_extension('dc', atom=False,rss=True)
         fg.id(feed_id)
@@ -192,8 +194,9 @@ class FeedUtil(object):
         fg.title(title=title, type=None, cdata=False)
         fg.subtitle(subtitle=subtitle, type=None, cdata=False)
         fg.author({'name': blog_author})
-        links = [{'href': altlink, 'rel': 'alternate'},
-                 {'href': atom_feed_url, 'rel': 'self'}]
+        links = [{'href': altlink, 'rel': 'alternate'}]
+        if atom_feed_url:
+            links.append({'href': atom_feed_url, 'rel': 'self'})
         if feed_push:
             links.append({'href': feed_push, 'rel': 'hub'})
 
@@ -352,12 +355,16 @@ class FeedUtil(object):
         blog_author = config["BLOG_AUTHOR"](lang)
         feed_push = config["FEED_PUSH"]
 
-        atom_feed_url = urljoin(base_url, atom_path.lstrip('/'))
         if atom_output_name:
+            atom_feed_url = urljoin(base_url, atom_path.lstrip('/'))
             atom_append_query = None
             if feed_links_append_query:
                 atom_append_query = feed_links_append_query.format(
                     feedRelUri=atom_path, feedFormat='atom')
+            feed_id = self.gen_uuid(atom_feed_url)
+        else:
+            atom_feed_url = None
+            feed_id = None
 
         if rss_output_name:
             rss_feed_url = urljoin(base_url, rss_path.lstrip('/'))
@@ -366,8 +373,6 @@ class FeedUtil(object):
                 rss_append_query = feed_links_append_query.format(
                     feedRelUri=rss_path, feedFormat='rss')
 
-        feed_id = self.gen_uuid(atom_feed_url)
-
         fg = FeedGenerator()
         fg.load_extension('dc', atom=False,rss=True)
         fg.id(feed_id)
@@ -375,8 +380,9 @@ class FeedUtil(object):
         fg.title(title=title, type=None, cdata=False)
         fg.subtitle(subtitle=subtitle, type=None, cdata=False)
         fg.author({'name': blog_author})
-        links = [{'href': altlink, 'rel': 'alternate'},
-                 {'href': atom_feed_url, 'rel': 'self'}]
+        links = [{'href': altlink, 'rel': 'alternate'}]
+        if atom_feed_url:
+            links.append({'href': atom_feed_url, 'rel': 'self'})
         if feed_push:
             links.append({'href': feed_push, 'rel': 'hub'})
 
