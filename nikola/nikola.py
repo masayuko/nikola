@@ -37,7 +37,6 @@ import os
 import json
 import sys
 import natsort
-import mimetypes
 try:
     from urlparse import urlparse, urlsplit, urlunsplit, urljoin, unquote
 except ImportError:
