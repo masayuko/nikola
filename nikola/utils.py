@@ -1607,11 +1607,7 @@ def adjust_name_for_index_path_list(path_list, i, displayed_i, lang, site, force
             for entry in path_schema:
                 path_list.append(entry.format(number=displayed_i, old_number=i, index_file=index_file))
         else:
-            if path_list[-1].endswith(extension):
-                file_base = path_list[-1][:-len(extension)]
-            else:
-                file_base = os.path.splitext(path_list[-1])[0]
-            path_list[-1] = '{0}-{1}{2}'.format(file_base, i, extension)
+            path_list[-1] = '{0}-{1}{2}'.format(os.path.splitext(path_list[-1])[0], i, extension)
     return path_list
 
 
@@ -1638,7 +1634,7 @@ def adjust_name_for_index_path(name, i, displayed_i, lang, site, force_addition=
 def adjust_name_for_index_link(name, i, displayed_i, lang, site, force_addition=False, extension=None):
     """Return link for a given index file."""
     link = adjust_name_for_index_path_list(name.split('/'), i, displayed_i, lang, site, force_addition, extension)
-    if extension != ".atom" and extension != '-atom.xml' and extension != '-rss.xml':
+    if not extension == ".atom":
         if len(link) > 0 and link[-1] == site.config["INDEX_FILE"] and site.config["STRIP_INDEXES"]:
             link[-1] = ''
     return '/'.join(link)

@@ -212,39 +212,25 @@ class RenderAuthors(Task):
         """Render a sort of index page collection using only this author's posts."""
         kind = "author"
 
-        def page_link(i, displayed_i, num_pages, force_addition, extension=None):
-            if extension == ".atom" or extension == '-atom.xml':
-                return utils.adjust_name_for_index_link(
-                    self.site.link(kind + '_atom', author, lang),
-                    i, displayed_i, lang, self.site, force_addition,
-                    extension='-atom.xml')
-            elif extension == '-rss.xml':
-                return utils.adjust_name_for_index_link(
-                    self.site.link(kind + '_rss', author, lang),
-                    i, displayed_i, lang, self.site, force_addition,
-                    extension=extension)
+        def _get_feed(extension):
+            if extension == ".atom":
+                return "_atom"
+            elif extension == ".xml":
+                return "_rss"
             else:
-                return utils.adjust_name_for_index_link(
-                    self.site.link(kind, author, lang),
-                    i, displayed_i, lang, self.site, force_addition,
-                    extension)
+                return ""
+
+        def page_link(i, displayed_i, num_pages, force_addition, extension=None):
+            feed = _get_feed(extension)
+            return utils.adjust_name_for_index_link(
+                self.site.link(kind + feed, author, lang),
+                i, displayed_i, lang, self.site, force_addition, extension)
 
         def page_path(i, displayed_i, num_pages, force_addition, extension=None):
-            if extension == ".atom" or extension == '-atom.xml':
-                return utils.adjust_name_for_index_path(
-                    self.site.path(kind + '_atom', author, lang),
-                    i, displayed_i, lang, self.site, force_addition,
-                    extension='-atom.xml')
-            elif extension == '-rss.xml':
-                return utils.adjust_name_for_index_path(
-                    self.site.path(kind + '_rss', author, lang),
-                    i, displayed_i, lang, self.site, force_addition,
-                    extension=extension)
-            else:
-                return utils.adjust_name_for_index_path(
-                    self.site.path(kind, author, lang),
-                    i, displayed_i, lang, self.site, force_addition,
-                    extension)
+            feed = _get_feed(extension)
+            return utils.adjust_name_for_index_path(
+                self.site.path(kind + feed, author, lang),
+                i, displayed_i, lang, self.site, force_addition, extension)
 
         context_source = {}
         title = self._get_title(author)
@@ -332,10 +318,10 @@ class RenderAuthors(Task):
 
         Example:
 
-        link://author_atom/joe => /authors/joe-atom.xml
+        link://author_atom/joe => /authors/joe.atom
         """
         return [_f for _f in [self.site.config['TRANSLATIONS'][lang],
-                              self.site.config['AUTHOR_PATH'], self.slugify_author_name(name) + "-atom.xml"] if
+                              self.site.config['AUTHOR_PATH'], self.slugify_author_name(name) + ".atom"] if
                 _f]
 
     def author_rss_path(self, name, lang):
@@ -343,15 +329,11 @@ class RenderAuthors(Task):
 
         Example:
 
-        link://author_rss/joe => /authors/joe-rss.xml
+        link://author_rss/joe => /authors/joe.xml
         """
         return [_f for _f in [self.site.config['TRANSLATIONS'][lang],
-                              self.site.config['AUTHOR_PATH'], self.slugify_author_name(name) + "-rss.xml"] if
+                              self.site.config['AUTHOR_PATH'], self.slugify_author_name(name) + ".xml"] if
                 _f]
-
-    def _add_extension(self, path, extension):
-        path[-1] += extension
-        return path
 
     def _posts_per_author(self):
         """Return a dict of posts per author."""

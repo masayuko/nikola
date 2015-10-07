@@ -1817,14 +1817,14 @@ class Nikola(object):
                                                               self)
                 if kw['generate_atom']:
                     atom_firstlink = page_link(first, firstpages_i, num_pages,
-                                               False, extension="-atom.xml")
+                                               False, extension=".atom")
                     atom_lastlink = page_link(last, lastpages_i, num_pages,
-                                              False, extension="-atom.xml")
+                                              False, extension=".atom")
                 if kw['generate_rss']:
                     rss_firstlink = page_link(first, firstpages_i, num_pages,
-                                              False, extension="-rss.xml")
+                                              False, extension=".xml")
                     rss_lastlink = page_link(last, lastpages_i, num_pages,
-                                             False, extension="-rss.xml")
+                                             False, extension=".xml")
 
         for i, post_list in enumerate(lists):
             context = context_source.copy()
@@ -1903,7 +1903,7 @@ class Nikola(object):
                 atom_nextlink = None
                 if kw['generate_atom']:
                     atom_path = page_link(i, ipages_i, num_pages, False,
-                                          extension="-atom.xml")
+                                          extension=".atom")
                     atom_output_name = os.path.join(kw['output_folder'],
                                                     atom_path.lstrip('/'))
                     if nextlink is not None:
@@ -1911,13 +1911,13 @@ class Nikola(object):
                             nextlink,
                             utils.get_displayed_page_number(nextlink, num_pages,
                                                             self),
-                            num_pages, False, extension="-atom.xml")
+                            num_pages, False, extension=".atom")
                     if prevlink is not None:
                         atom_nextlink = page_link(
                             prevlink,
                             utils.get_displayed_page_number(prevlink, num_pages,
                                                             self),
-                            num_pages, False, extension="-atom.xml")
+                            num_pages, False, extension=".atom")
                     targets.append(atom_output_name)
 
                 rss_path = None
@@ -1926,7 +1926,7 @@ class Nikola(object):
                 rss_nextlink = None
                 if kw['generate_rss']:
                     rss_path = page_link(i, ipages_i, num_pages, False,
-                                         extension="-rss.xml")
+                                         extension=".xml")
                     rss_output_name = os.path.join(kw['output_folder'],
                                                    rss_path.lstrip('/'))
                     if nextlink is not None:
@@ -1934,13 +1934,13 @@ class Nikola(object):
                             nextlink,
                             utils.get_displayed_page_number(nextlink, num_pages,
                                                             self),
-                            num_pages, False, extension="-rss.xml")
+                            num_pages, False, extension=".xml")
                     if prevlink is not None:
                         rss_nextlink = page_link(
                             prevlink,
                             utils.get_displayed_page_number(prevlink, num_pages,
                                                             self),
-                            num_pages, False, extension="-rss.xml")
+                            num_pages, False, extension=".xml")
                     targets.append(rss_output_name)
 
                 feed_task = {

@@ -319,37 +319,25 @@ class RenderTags(Task):
         """Render a sort of index page collection using only this tag's posts."""
         kind = "category" if is_category else "tag"
 
-        def page_link(i, displayed_i, num_pages, force_addition, extension=None):
-            if extension == '.atom' or extension == '-atom.xml':
-                return utils.adjust_name_for_index_link(
-                    self.site.link(kind + '_atom', tag, lang),
-                    i, displayed_i, lang, self.site, force_addition,
-                    extension='-atom.xml')
-            elif extension == '-rss.xml':
-                return utils.adjust_name_for_index_link(
-                    self.site.link(kind + '_rss', tag, lang),
-                    i, displayed_i, lang, self.site, force_addition,
-                    extension=extension)
+        def _get_feed(extension):
+            if extension == ".atom":
+                return "_atom"
+            elif extension == ".xml":
+                return "_rss"
             else:
-                return utils.adjust_name_for_index_link(
-                    self.site.link(kind, tag, lang),
-                    i, displayed_i, lang, self.site, force_addition, extension)
+                return ""
+
+        def page_link(i, displayed_i, num_pages, force_addition, extension=None):
+            feed = _get_feed(extension)
+            return utils.adjust_name_for_index_link(
+                self.site.link(kind + feed, tag, lang),
+                i, displayed_i, lang, self.site, force_addition, extension)
 
         def page_path(i, displayed_i, num_pages, force_addition, extension=None):
-            if extension == '.atom' or extension == '-atom.xml':
-                return utils.adjust_name_for_index_path(
-                    self.site.link(kind + '_atom', tag, lang),
-                    i, displayed_i, lang, self.site, force_addition,
-                    extension='-atom.xml')
-            elif extension == '-rss.xml':
-                return utils.adjust_name_for_index_path(
-                    self.site.link(kind + '_rss', tag, lang),
-                    i, displayed_i, lang, self.site, force_addition,
-                    extension=extension)
-            else:
-                return utils.adjust_name_for_index_path(
-                    self.site.link(kind, tag, lang),
-                    i, displayed_i, lang, self.site, force_addition, extension)
+            feed = _get_feed(extension)
+            return utils.adjust_name_for_index_path(
+                self.site.link(kind + feed, tag, lang),
+                i, displayed_i, lang, self.site, force_addition, extension)
 
         context_source = {}
         title = self._get_title(tag, is_category)
@@ -458,10 +446,10 @@ class RenderTags(Task):
 
         Example:
 
-        link://tag_atom/cats => /tags/cats-atom.xml
+        link://tag_atom/cats => /tags/cats.atom
         """
         return [_f for _f in [self.site.config['TRANSLATIONS'][lang],
-                              self.site.config['TAG_PATH'][lang], self.slugify_tag_name(name) + "-atom.xml"] if
+                              self.site.config['TAG_PATH'][lang], self.slugify_tag_name(name) + ".atom"] if
                 _f]
 
     def tag_rss_path(self, name, lang):
@@ -469,10 +457,10 @@ class RenderTags(Task):
 
         Example:
 
-        link://tag_rss/cats => /tags/cats-rss.xml
+        link://tag_rss/cats => /tags/cats.xml
         """
         return [_f for _f in [self.site.config['TRANSLATIONS'][lang],
-                              self.site.config['TAG_PATH'][lang], self.slugify_tag_name(name) + "-rss.xml"] if
+                              self.site.config['TAG_PATH'][lang], self.slugify_tag_name(name) + ".xml"] if
                 _f]
 
     def slugify_category_name(self, name):
@@ -511,19 +499,19 @@ class RenderTags(Task):
 
         Example:
 
-        link://category_atom/dogs => /categories/dogs-atom.xml
+        link://category_atom/dogs => /categories/dogs.atom
         """
         return [_f for _f in [self.site.config['TRANSLATIONS'][lang],
                               self.site.config['CATEGORY_PATH'][lang]] if
-                _f] + self._add_extension(self.slugify_category_name(name), "-atom.xml")
+                _f] + self._add_extension(self.slugify_category_name(name), ".atom")
 
     def category_rss_path(self, name, lang):
         """A link to a category's RSS feed.
 
         Example:
 
-        link://category_rss/dogs => /categories/dogs-rss.xml
+        link://category_rss/dogs => /categories/dogs.xml
         """
         return [_f for _f in [self.site.config['TRANSLATIONS'][lang],
                               self.site.config['CATEGORY_PATH'][lang]] if
-                _f] + self._add_extension(self.slugify_category_name(name), "-rss.xml")
+                _f] + self._add_extension(self.slugify_category_name(name), ".xml")

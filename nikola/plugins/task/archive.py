@@ -94,39 +94,25 @@ class Archive(Task):
         posts = sorted(posts, key=lambda a: a.date)
         posts.reverse()
         if kw['archives_are_indexes']:
-            def page_link(i, displayed_i, num_pages, force_addition, extension=None):
-                if extension == ".atom" or extension == '-atom.xml':
-                    return adjust_name_for_index_link(
-                        self.site.link("archive_atom", name, lang),
-                        i, displayed_i, lang, self.site, force_addition,
-                        extension='-atom.xml')
-                elif extension == '-rss.xml':
-                    return adjust_name_for_index_link(
-                        self.site.link("archive_rss", name, lang),
-                        i, displayed_i, lang, self.site, force_addition,
-                        extension=extension)
+            def _get_feed(extension):
+                if extension == ".atom":
+                    return "_atom"
+                elif extension == ".xml":
+                    return "_rss"
                 else:
-                    return adjust_name_for_index_link(
-                        self.site.link("archive", name, lang),
-                        i, displayed_i, lang, self.site, force_addition,
-                        extension)
+                    return ""
+
+            def page_link(i, displayed_i, num_pages, force_addition, extension=None):
+                feed = _get_feed(extension)
+                return adjust_name_for_index_link(
+                    self.site.link("archive" + feed, name, lang),
+                    i, displayed_i, lang, self.site, force_addition, extension)
 
             def page_path(i, displayed_i, num_pages, force_addition, extension=None):
-                if extension == ".atom" or extension == '-atom.xml':
-                    return adjust_name_for_index_path(
-                        self.site.path("archive_atom", name, lang),
-                        i, displayed_i, lang, self.site, force_addition,
-                        extension='-atom.xml')
-                elif extension == '-rss.xml':
-                    return adjust_name_for_index_path(
-                        self.site.path("archive_rss", name, lang),
-                        i, displayed_i, lang, self.site, force_addition,
-                        extension=extension)
-                else:
-                    return adjust_name_for_index_path(
-                        self.site.path("archive", name, lang),
-                        i, displayed_i, lang, self.site, force_addition,
-                        extension)
+                feed = _get_feed(extension)
+                return adjust_name_for_index_path(
+                    self.site.path("archive" + feed, name, lang),
+                    i, displayed_i, lang, self.site, force_addition, extension)
 
             uptodate = []
             if deps_translatable is not None:
@@ -266,14 +252,8 @@ class Archive(Task):
                                   self.site.config['ARCHIVE_PATH'],
                                   archive_file] if _f]
 
-    def archive_atom_path(self, name, lang):
-        """Link to atom archive path, name is the year.
-
-        Example:
-
-        link://archive_atom/2013 => /archives/2013/index-atom.xml
-        """
-        extension = "-atom.xml"
+    def _archive_feed_path(self, name, lang, extension):
+        """Link to feed archive path, name is the year."""
         archive_file = os.path.splitext(self.site.config['ARCHIVE_FILENAME'])[0] + extension
         index_file = os.path.splitext(self.site.config['INDEX_FILE'])[0] + extension
         if name:
@@ -284,22 +264,21 @@ class Archive(Task):
             return [_f for _f in [self.site.config['TRANSLATIONS'][lang],
                                   self.site.config['ARCHIVE_PATH'],
                                   archive_file] if _f]
+
+    def archive_atom_path(self, name, lang):
+        """Link to atom archive path, name is the year.
+
+        Example:
+
+        link://archive_atom/2013 => /archives/2013/index.atom
+        """
+        return self._archive_feed_path(name, lang, ".atom")
 
     def archive_rss_path(self, name, lang):
         """Link to RSS archive path, name is the year.
 
         Example:
 
-        link://archive_atom/2013 => /archives/2013/index-rss.xml
+        link://archive_atom/2013 => /archives/2013/index.xml
         """
-        extension = "-rss.xml"
-        archive_file = os.path.splitext(self.site.config['ARCHIVE_FILENAME'])[0] + extension
-        index_file = os.path.splitext(self.site.config['INDEX_FILE'])[0] + extension
-        if name:
-            return [_f for _f in [self.site.config['TRANSLATIONS'][lang],
-                                  self.site.config['ARCHIVE_PATH'], name,
-                                  index_file] if _f]
-        else:
-            return [_f for _f in [self.site.config['TRANSLATIONS'][lang],
-                                  self.site.config['ARCHIVE_PATH'],
-                                  archive_file] if _f]
+        return self._archive_feed_path(name, lang, ".xml")

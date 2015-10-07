@@ -141,7 +141,7 @@ class GenerateFeed(Task):
 
         Example:
 
-        link://rss => /blog/atom.xml
+        link://atom => /blog/feed.atom
         """
         return [_f for _f in [self.site.config['TRANSLATIONS'][lang],
-                              self.site.config['RSS_PATH'], 'atom.xml'] if _f]
+                              self.site.config['RSS_PATH'], 'feed.atom'] if _f]

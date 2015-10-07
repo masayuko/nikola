@@ -177,14 +177,14 @@ class Galleries(Task, ImageProcessor):
         It will try to find a gallery with that name if it's not ambiguous
         or with that path. For example:
 
-        link://gallery_rss/london => /galleries/trips/london/atom.xml
+        link://gallery_rss/london => /galleries/trips/london/feed.atom
 
-        link://gallery_rss/trips/london => /galleries/trips/london/atom.xml
+        link://gallery_rss/trips/london => /galleries/trips/london/feed.atom
         """
         gallery_path = self._find_gallery_path(name)
         return [_f for _f in [self.site.config['TRANSLATIONS'][lang]] +
                 list(os.path.split(gallery_path)) +
-                ['atom.xml'] if _f]
+                ['feed.atom'] if _f]
 
     def gen_tasks(self):
         """Render image galleries."""

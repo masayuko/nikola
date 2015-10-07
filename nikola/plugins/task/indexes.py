@@ -89,43 +89,29 @@ class Indexes(Task):
             "blog_title": self.site.config["BLOG_TITLE"],
         }
 
+        def _get_feed(extension):
+            if extension == ".atom":
+                return "_atom"
+            elif extension == ".xml":
+                return "_rss"
+            else:
+                return ""
+
         template_name = "index.tmpl"
         for lang in kw["translations"]:
             def page_link(i, displayed_i, num_pages, force_addition,
                           extension=None):
-                if extension == '.atom' or extension == '-atom.xml':
-                    return utils.adjust_name_for_index_link(
-                        self.site.link('index_atom', None, lang),
-                        i, displayed_i, lang, self.site, force_addition,
-                        extension='-atom.xml')
-                elif extension == '-rss.xml':
-                    return utils.adjust_name_for_index_link(
-                        self.site.link('index_rss', None, lang),
-                        i, displayed_i, lang, self.site, force_addition,
-                        extension=extension)
-                else:
-                    return utils.adjust_name_for_index_link(
-                        self.site.link('index', None, lang),
-                        i, displayed_i, lang, self.site, force_addition,
-                        extension)
+                feed = _get_feed(extension)
+                return utils.adjust_name_for_index_link(
+                    self.site.link('index' + feed, None, lang),
+                    i, displayed_i, lang, self.site, force_addition, extension)
 
             def page_path(i, displayed_i, num_pages, force_addition,
                           extension=None):
-                if extension == '.atom' or extension == '-atom.xml':
-                    return utils.adjust_name_for_index_path(
-                        self.site.path('index_atom', None, lang),
-                        i, displayed_i, lang, self.site, force_addition,
-                        extension='-atom.xml')
-                elif extension == '-rss.xml':
-                    return utils.adjust_name_for_index_path(
-                        self.site.path('index_rss', None, lang),
-                        i, displayed_i, lang, self.site, force_addition,
-                        extension=extension)
-                else:
-                    return utils.adjust_name_for_index_path(
-                        self.site.path('index', None, lang),
-                        i, displayed_i, lang, self.site, force_addition,
-                        extension)
+                feed = _get_feed(extension)
+                return utils.adjust_name_for_index_path(
+                    self.site.path('index' + feed, None, lang),
+                    i, displayed_i, lang, self.site, force_addition, extension)
 
             filtered_posts = self._get_filtered_posts(lang, kw["show_untranslated_posts"])
 
@@ -158,38 +144,16 @@ class Indexes(Task):
 
                     def cat_link(i, displayed_i, num_pages, force_addition,
                                  extension=None):
-                        if extension == '.atom' or extension == '-atom.xml':
-                            return utils.adjust_name_for_index_link(
-                                self.site.link("section_index_atom", section_slug, lang),
-                                i, displayed_i, lang, self.site, force_addition,
-                                extension='-atom.xml')
-                        elif extension == '-rss.xml':
-                            return utils.adjust_name_for_index_link(
-                                self.site.link("section_index_rss", section_slug, lang),
-                                i, displayed_i, lang, self.site, force_addition,
-                                extension=extension)
-                        else:
-                            return utils.adjust_name_for_index_link(
-                                self.site.link("section_index", section_slug, lang),
-                                i, displayed_i, lang, self.site, force_addition,
-                                extension)
+                        feed = _get_feed(extension)
+                        return utils.adjust_name_for_index_link(
+                            self.site.link("section_index" + feed, section_slug, lang),
+                            i, displayed_i, lang, self.site, force_addition, extension)
 
                     def cat_path(i, displayed_i, num_pages, force_addition, extension=None):
-                        if extension == '.atom' or extension == '-atom.xml':
-                            return utils.adjust_name_for_index_path(
-                                self.site.path("section_index_atom", section_slug, lang),
-                                i, displayed_i, lang, self.site, force_addition,
-                                extension='-atom.xml')
-                        elif extension == '-rss.xml':
-                            return utils.adjust_name_for_index_path(
-                                self.site.path("section_index_rss", section_slug, lang),
-                                i, displayed_i, lang, self.site, force_addition,
-                                extension=extension)
-                        else:
-                            return utils.adjust_name_for_index_path(
-                                self.site.path("section_index", section_slug, lang),
-                                i, displayed_i, lang, self.site, force_addition,
-                                extension)
+                        feed = _get_feed(extension)
+                        return utils.adjust_name_for_index_path(
+                            self.site.path("section_index" + feed, section_slug, lang),
+                            i, displayed_i, lang, self.site, force_addition, extension)
 
                     context = {}
 
@@ -368,33 +332,33 @@ class Indexes(Task):
 
         Example:
 
-        link://index_atom/3 => /index-3-atom.xml
+        link://index_atom/3 => /index-3.atom
         """
-        return self._index_feed_path(name, lang, '-atom.xml')
+        return self._index_feed_path(name, lang, '.atom')
 
     def index_rss_path(self, name, lang):
         """Link to a numbered RSS index.
 
         Example:
 
-        link://index_rss/3 => /index-3-rss.xml
+        link://index_rss/3 => /index-3.xml
         """
-        return self._index_feed_path(name, lang, '-rss.xml')
+        return self._index_feed_path(name, lang, '.xml')
 
     def index_section_atom_path(self, name, lang):
         """Link to the Atom index for a section.
 
         Example:
 
-        link://section_index_atom/cars => /cars/index-atom.xml
+        link://section_index_atom/cars => /cars/index.atom
         """
-        return self._index_section_feed_path(name, lang, '-atom.xml')
+        return self._index_section_feed_path(name, lang, '.atom')
 
     def index_section_rss_path(self, name, lang):
         """Link to the RSS index for a section.
 
         Example:
 
-        link://section_index_rss/cars => /cars/index-rss.xml
+        link://section_index_rss/cars => /cars/index.xml
         """
-        return self._index_section_feed_path(name, lang, '-rss.xml')
+        return self._index_section_feed_path(name, lang, '.xml')
