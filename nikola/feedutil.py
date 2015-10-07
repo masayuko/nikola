@@ -169,16 +169,44 @@ class FeedUtil(object):
         feed_previewimage = config["FEED_PREVIEWIMAGE"]
         feed_previewimage_default = config["FEED_PREVIEWIMAGE_DEFAULT"]
 
+        fg = FeedGenerator()
+        fg.load_extension('dc', atom=False,rss=True)
+        fg.updated(datetime.now(dateutil.tz.tzutc()))
+        fg.title(title=title, type=None, cdata=False)
+        fg.subtitle(subtitle=subtitle, type=None, cdata=False)
+        fg.author({'name': blog_author})
+        links = [{'href': altlink, 'rel': 'alternate'}]
+
         if atom_output_name:
             atom_feed_url = urljoin(base_url, atom_path.lstrip('/'))
             atom_append_query = None
             if feed_links_append_query:
                 atom_append_query = feed_links_append_query.format(
                     feedRelUri=atom_path, feedFormat='atom')
-            feed_id = self.gen_urn(atom_feed_url)
-        else:
-            atom_feed_url = None
-            feed_id = None
+            fg.id(self.gen_urn(atom_feed_url))
+            links.append({'href': atom_feed_url, 'rel': 'self'})
+
+        if feed_push:
+            links.append({'href': feed_push, 'rel': 'hub'})
+
+        if atom_output_name:
+            if atom_nextlink is not None:
+                links.append({'href': urljoin(base_url,
+                                              atom_nextlink.lstrip('/')),
+                              'rel': 'next'})
+            if atom_prevlink is not None:
+                links.append({'href': urljoin(base_url,
+                                              atom_prevlink.lstrip('/')),
+                              'rel': 'previous'})
+            if atom_firstlink is not None:
+                links.append({'href': urljoin(base_url,
+                                              atom_firstlink.lstrip('/')),
+                              'rel': 'first'})
+            if atom_lastlink is not None:
+                links.append({'href': urljoin(base_url,
+                                              atom_lastlink.lstrip('/')),
+                              'rel': 'last'})
+        fg.link(links)
 
         if rss_output_name:
             rss_feed_url = urljoin(base_url, rss_path.lstrip('/'))
@@ -187,34 +215,6 @@ class FeedUtil(object):
                 rss_append_query = feed_links_append_query.format(
                     feedRelUri=rss_path, feedFormat='rss')
 
-        fg = FeedGenerator()
-        fg.load_extension('dc', atom=False,rss=True)
-        fg.id(feed_id)
-        fg.updated(datetime.now(dateutil.tz.tzutc()))
-        fg.title(title=title, type=None, cdata=False)
-        fg.subtitle(subtitle=subtitle, type=None, cdata=False)
-        fg.author({'name': blog_author})
-        links = [{'href': altlink, 'rel': 'alternate'}]
-        if atom_feed_url:
-            links.append({'href': atom_feed_url, 'rel': 'self'})
-        if feed_push:
-            links.append({'href': feed_push, 'rel': 'hub'})
-
-        if atom_nextlink is not None:
-            links.append({'href': urljoin(base_url, atom_nextlink.lstrip('/')),
-                          'rel': 'next'})
-        if atom_prevlink is not None:
-            links.append({'href': urljoin(base_url, atom_prevlink.lstrip('/')),
-                          'rel': 'previous'})
-        if atom_firstlink is not None:
-            links.append({'href': urljoin(base_url, atom_firstlink.lstrip('/')),
-                          'rel': 'first'})
-        if atom_lastlink is not None:
-            links.append({'href': urljoin(base_url, atom_lastlink.lstrip('/')),
-                          'rel': 'last'})
-        fg.link(links)
-
-        if rss_output_name:
             fg.rss_atom_link_self(rss_feed_url)
             rss_links = []
             if rss_nextlink is not None:
@@ -355,16 +355,44 @@ class FeedUtil(object):
         blog_author = config["BLOG_AUTHOR"](lang)
         feed_push = config["FEED_PUSH"]
 
+        fg = FeedGenerator()
+        fg.load_extension('dc', atom=False,rss=True)
+        fg.updated(datetime.now(dateutil.tz.tzutc()))
+        fg.title(title=title, type=None, cdata=False)
+        fg.subtitle(subtitle=subtitle, type=None, cdata=False)
+        fg.author({'name': blog_author})
+        links = [{'href': altlink, 'rel': 'alternate'}]
+
         if atom_output_name:
             atom_feed_url = urljoin(base_url, atom_path.lstrip('/'))
             atom_append_query = None
             if feed_links_append_query:
                 atom_append_query = feed_links_append_query.format(
                     feedRelUri=atom_path, feedFormat='atom')
-            feed_id = self.gen_urn(atom_feed_url)
-        else:
-            atom_feed_url = None
-            feed_id = None
+            fg.id(self.gen_urn(atom_feed_url))
+            links.append({'href': atom_feed_url, 'rel': 'self'})
+
+        if feed_push:
+            links.append({'href': feed_push, 'rel': 'hub'})
+
+        if atom_output_name:
+            if atom_nextlink is not None:
+                links.append({'href': urljoin(base_url,
+                                              atom_nextlink.lstrip('/')),
+                              'rel': 'next'})
+            if atom_prevlink is not None:
+                links.append({'href': urljoin(base_url,
+                                              atom_prevlink.lstrip('/')),
+                              'rel': 'previous'})
+            if atom_firstlink is not None:
+                links.append({'href': urljoin(base_url,
+                                              atom_firstlink.lstrip('/')),
+                              'rel': 'first'})
+            if atom_lastlink is not None:
+                links.append({'href': urljoin(base_url,
+                                              atom_lastlink.lstrip('/')),
+                              'rel': 'last'})
+        fg.link(links)
 
         if rss_output_name:
             rss_feed_url = urljoin(base_url, rss_path.lstrip('/'))
@@ -373,34 +401,6 @@ class FeedUtil(object):
                 rss_append_query = feed_links_append_query.format(
                     feedRelUri=rss_path, feedFormat='rss')
 
-        fg = FeedGenerator()
-        fg.load_extension('dc', atom=False,rss=True)
-        fg.id(feed_id)
-        fg.updated(datetime.now(dateutil.tz.tzutc()))
-        fg.title(title=title, type=None, cdata=False)
-        fg.subtitle(subtitle=subtitle, type=None, cdata=False)
-        fg.author({'name': blog_author})
-        links = [{'href': altlink, 'rel': 'alternate'}]
-        if atom_feed_url:
-            links.append({'href': atom_feed_url, 'rel': 'self'})
-        if feed_push:
-            links.append({'href': feed_push, 'rel': 'hub'})
-
-        if atom_nextlink is not None:
-            links.append({'href': urljoin(base_url, atom_nextlink.lstrip('/')),
-                          'rel': 'next'})
-        if atom_prevlink is not None:
-            links.append({'href': urljoin(base_url, atom_prevlink.lstrip('/')),
-                          'rel': 'previous'})
-        if atom_firstlink is not None:
-            links.append({'href': urljoin(base_url, atom_firstlink.lstrip('/')),
-                          'rel': 'first'})
-        if atom_lastlink is not None:
-            links.append({'href': urljoin(base_url, atom_lastlink.lstrip('/')),
-                          'rel': 'last'})
-        fg.link(links)
-
-        if rss_output_name:
             fg.rss_atom_link_self(rss_feed_url)
             rss_links = []
             if rss_nextlink is not None:
