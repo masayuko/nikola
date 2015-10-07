@@ -65,7 +65,7 @@ class GenerateFeed(Task):
             "feed_read_more_link": self.site.config["FEED_READ_MORE_LINK"],
             "feed_links_append_query": self.site.config["FEED_LINKS_APPEND_QUERY"],
             "feed_enclosure": self.site.config["FEED_ENCLOSURE"],
-            "feed_default_image": self.site.config["FEED_DEFAULT_IMAGE"],
+            "feed_previewimage_default": self.site.config["FEED_PREVIEWIMAGE_DEFAULT"],
             "feed_push": self.site.config["FEED_PUSH"],
         }
 
