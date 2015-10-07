@@ -144,7 +144,7 @@ class FeedUtil(object):
                 raise(e)
         return data
 
-    def gen_uuid(self, path):
+    def gen_urn(self, path):
         """Create a URN string."""
         if sys.version_info[0] == 3:
             return 'urn:uuid:{0}'.format(uuid.uuid5(uuid.NAMESPACE_URL, path))
@@ -175,7 +175,7 @@ class FeedUtil(object):
             if feed_links_append_query:
                 atom_append_query = feed_links_append_query.format(
                     feedRelUri=atom_path, feedFormat='atom')
-            feed_id = self.gen_uuid(atom_feed_url)
+            feed_id = self.gen_urn(atom_feed_url)
         else:
             atom_feed_url = None
             feed_id = None
@@ -240,7 +240,7 @@ class FeedUtil(object):
             entry_date = self._tzdatetime(post.date)
             entry_updated = self._tzdatetime(post.updated)
 
-            entry_id = self.gen_uuid(post.permalink(lang, absolute=True))
+            entry_id = self.gen_urn(post.permalink(lang, absolute=True))
 
             fe = fg.add_entry()
             fe.id(entry_id)
@@ -361,7 +361,7 @@ class FeedUtil(object):
             if feed_links_append_query:
                 atom_append_query = feed_links_append_query.format(
                     feedRelUri=atom_path, feedFormat='atom')
-            feed_id = self.gen_uuid(atom_feed_url)
+            feed_id = self.gen_urn(atom_feed_url)
         else:
             atom_feed_url = None
             feed_id = None
@@ -427,7 +427,7 @@ class FeedUtil(object):
 
             img_url = urljoin(self.site.config['BASE_URL'], img.lstrip('/'))
 
-            entry_id = self.gen_uuid(img_url)
+            entry_id = self.gen_urn(img_url)
             fe = fg.add_entry()
             fe.id(entry_id)
             fe.title(title=imgtitle, type='text', cdata=False)
