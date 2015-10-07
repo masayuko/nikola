@@ -447,6 +447,7 @@ class Nikola(object):
             'FEED_PUSH': None,
             'FEED_READ_MORE_LINK': DEFAULT_FEED_READ_MORE_LINK,
             'FEED_LINKS_APPEND_QUERY': False,
+            'FEED_PATH': '',
             'GENERATE_RSS': True,
             'RSS_LINK': None,
             'RSS_PATH': '',
@@ -629,6 +630,15 @@ class Nikola(object):
             if 'FEED_READ_MORE_LINK' in config:
                 utils.LOGGER.warn('FEED_READ_MORE_LINK conflicts with RSS_READ_MORE_LINK, ignoring RSS_READ_MORE_LINK')
             self.config['FEED_READ_MORE_LINK'] = utils.TranslatableSetting('FEED_READ_MORE_LINK', config['RSS_READ_MORE_LINK'], self.config['TRANSLATIONS'])
+
+        # RSS_PATH has been replaced with FEED_PATH
+        # TODO: remove on v8
+        if 'RSS_PATH' in config:
+            utils.LOGGER.warn('The RSS_PATH option is deprecated, use FEED_PATH instead.')
+            if 'FEED_PATH' in config:
+                utils.LOGGER.warn('FEED_PATH conflicts with RSS_PATH, ignoring RSS_PATH')
+            else:
+                self.config['FEED_PATH'] = config['RSS_PATH']
 
         # DEFAULT_TRANSLATIONS_PATTERN was changed from "p.e.l" to "p.l.e"
         # TODO: remove on v8
@@ -946,7 +956,7 @@ class Nikola(object):
             'CONTENT_FOOTER')
         self._GLOBAL_CONTEXT['generate_atom'] = self.config.get('GENERATE_ATOM')
         self._GLOBAL_CONTEXT['generate_rss'] = self.config.get('GENERATE_RSS')
-        self._GLOBAL_CONTEXT['rss_path'] = self.config.get('RSS_PATH')
+        self._GLOBAL_CONTEXT['rss_path'] = self.config.get('FEED_PATH')
         self._GLOBAL_CONTEXT['rss_link'] = self.config.get('RSS_LINK')
 
         self._GLOBAL_CONTEXT['navigation_links'] = self.config.get('NAVIGATION_LINKS')

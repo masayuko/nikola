@@ -67,6 +67,7 @@ class GenerateFeed(Task):
             "feed_enclosure": self.site.config["FEED_ENCLOSURE"],
             "feed_previewimage_default": self.site.config["FEED_PREVIEWIMAGE_DEFAULT"],
             "feed_push": self.site.config["FEED_PUSH"],
+            "feed_path": self.site.config["FEED_PATH"],
         }
 
         self.site.scan_posts()
@@ -134,7 +135,7 @@ class GenerateFeed(Task):
         link://rss => /blog/rss.xml
         """
         return [_f for _f in [self.site.config['TRANSLATIONS'][lang],
-                              self.site.config['RSS_PATH'], 'rss.xml'] if _f]
+                              self.site.config['FEED_PATH'], 'rss.xml'] if _f]
 
     def atom_path(self, name, lang):
         """A link to the Atom feed path.
@@ -144,4 +145,4 @@ class GenerateFeed(Task):
         link://atom => /blog/feed.atom
         """
         return [_f for _f in [self.site.config['TRANSLATIONS'][lang],
-                              self.site.config['RSS_PATH'], 'feed.atom'] if _f]
+                              self.site.config['FEED_PATH'], 'feed.atom'] if _f]

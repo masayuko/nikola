@@ -421,9 +421,10 @@ HIDDEN_AUTHORS = ['Guest']
 # disable it by setting USE_BASE_TAG to False.
 # USE_BASE_TAG = True
 
-# Final location for the blog main RSS feed is:
-# output / TRANSLATION[lang] / RSS_PATH / rss.xml
-# RSS_PATH = ""
+# Final location for the blog main feeds are:
+# output / TRANSLATION[lang] / FEED_PATH / rss.xml
+# output / TRANSLATION[lang] / FEED_PATH / feed.atom
+# FEED_PATH = ""
 
 # Slug the Tag URL. Easier for users to type, special characters are
 # often removed or replaced as well.
