@@ -1806,8 +1806,8 @@ class Nikola(object):
             rss_lastlink = None
             if num_pages > 1:
                 if kw['indexes_static']:
-                    first = 0
-                    last = 1
+                    first = 1
+                    last = 0
                 else:
                     first = num_pages - 1
                     last = 0
@@ -1861,11 +1861,12 @@ class Nikola(object):
                     elif i == 0:
                         nextlink = num_pages - 1
             else:
-                if i >= 1:
+                if i > 0:
                     prevlink = i - 1
                 if i < num_pages - 1:
                     nextlink = i + 1
             if prevlink is not None:
+                # the opposite direction...
                 context["prevlink"] = page_link(prevlink,
                                                 utils.get_displayed_page_number(prevlink, num_pages, self),
                                                 num_pages, False)
@@ -1873,6 +1874,7 @@ class Nikola(object):
                                                     utils.get_displayed_page_number(prevlink, num_pages, self),
                                                     num_pages, False, extension=".atom")
             if nextlink is not None:
+                # the opposite direction...
                 context["nextlink"] = page_link(nextlink,
                                                 utils.get_displayed_page_number(nextlink, num_pages, self),
                                                 num_pages, False)
@@ -1904,16 +1906,16 @@ class Nikola(object):
                                           extension="-atom.xml")
                     atom_output_name = os.path.join(kw['output_folder'],
                                                     atom_path.lstrip('/'))
-                    if prevlink is not None:
-                        atom_prevlink = page_link(
-                            prevlink,
-                            utils.get_displayed_page_number(prevlink, num_pages,
-                                                            self),
-                            num_pages, False, extension="-atom.xml")
                     if nextlink is not None:
-                        atom_nextlink = page_link(
+                        atom_prevlink = page_link(
                             nextlink,
                             utils.get_displayed_page_number(nextlink, num_pages,
+                                                            self),
+                            num_pages, False, extension="-atom.xml")
+                    if prevlink is not None:
+                        atom_nextlink = page_link(
+                            prevlink,
+                            utils.get_displayed_page_number(prevlink, num_pages,
                                                             self),
                             num_pages, False, extension="-atom.xml")
                     targets.append(atom_output_name)
@@ -1927,16 +1929,16 @@ class Nikola(object):
                                          extension="-rss.xml")
                     rss_output_name = os.path.join(kw['output_folder'],
                                                    rss_path.lstrip('/'))
-                    if prevlink is not None:
-                        rss_prevlink = page_link(
-                            prevlink,
-                            utils.get_displayed_page_number(prevlink, num_pages,
-                                                            self),
-                            num_pages, False, extension="-rss.xml")
                     if nextlink is not None:
-                        rss_nextlink = page_link(
+                        rss_prevlink = page_link(
                             nextlink,
                             utils.get_displayed_page_number(nextlink, num_pages,
+                                                            self),
+                            num_pages, False, extension="-rss.xml")
+                    if prevlink is not None:
+                        rss_nextlink = page_link(
+                            prevlink,
+                            utils.get_displayed_page_number(prevlink, num_pages,
                                                             self),
                             num_pages, False, extension="-rss.xml")
                     targets.append(rss_output_name)
