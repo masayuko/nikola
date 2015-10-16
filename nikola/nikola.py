@@ -1879,17 +1879,11 @@ class Nikola(object):
                 context["prevlink"] = page_link(prevlink,
                                                 utils.get_displayed_page_number(prevlink, num_pages, self),
                                                 num_pages, False)
-                context["prevfeedlink"] = page_link(prevlink,
-                                                    utils.get_displayed_page_number(prevlink, num_pages, self),
-                                                    num_pages, False, extension=".atom")
             if nextlink is not None:
                 # the opposite direction...
                 context["nextlink"] = page_link(nextlink,
                                                 utils.get_displayed_page_number(nextlink, num_pages, self),
                                                 num_pages, False)
-                context["nextfeedlink"] = page_link(nextlink,
-                                                    utils.get_displayed_page_number(nextlink, num_pages, self),
-                                                    num_pages, False, extension=".atom")
             context["permalink"] = page_link(i, ipages_i, num_pages, False)
             output_name = os.path.join(kw['output_folder'], page_path(i, ipages_i, num_pages, False))
             task = self.generic_post_list_renderer(
