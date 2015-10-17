@@ -30,9 +30,10 @@ from __future__ import print_function, absolute_import, unicode_literals
 import io
 import os
 try:
-    from urlparse import urljoin, urlparse
+    from urlparse import urljoin
 except ImportError:
-    from urllib.parse import urljoin, urlparse  # NOQA
+    from urllib.parse import urljoin  # NOQA
+import robotstxt
 
 from nikola.plugin_categories import LateTask
 from nikola import utils
@@ -62,13 +63,14 @@ class RobotsFile(LateTask):
                 utils.LOGGER.warn('robots.txt not ending up in server root, will be useless')
 
             with io.open(robots_path, 'w+', encoding='utf8') as outf:
-                outf.write("Sitemap: {0}\n\n".format(sitemapindex_url))
-                outf.write("User-Agent: *\n")
+                lines = ['User-agent: *']
                 if kw["robots_exclusions"]:
                     for loc in kw["robots_exclusions"]:
-                        outf.write("Disallow: {0}\n".format(loc))
-                outf.write("Host: {0}\n".format(urlparse(kw["base_url"]).netloc))
-
+                        lines.append('Disallow: {0}'.format(loc))
+                else:
+                    lines.append('Allow: /')
+                lines.append('Sitemap: {0}'.format(sitemapindex_url))
+                robotstxt.dump(outf, robotstxt.parse(lines), ordered=True)
         yield self.group_task()
 
         if not utils.get_asset_path("robots.txt", [], files_folders=kw["files_folders"], output_dir=False):
