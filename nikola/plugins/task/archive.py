@@ -338,42 +338,24 @@ class Archive(Task):
 
             if not kw["create_monthly_archive"] or kw["create_full_archives"]:
                 yield self._generate_tasks(kw, lang, years, archdata)
-            else:
-                for year in years:
-                    arch = archdata[year]
-                    months = []
-                    for m in self.site.posts_per_month.keys():
-                        if m.startswith(str(year)):
-                            months.append([m.split('/')[1],
-                                           self.site.link("archive", m, lang),
-                                           len(self.site.posts_per_month[m])])
-                    months = sorted(months, reverse=True)
-                    items = []
-                    for month, link, count in months:
-                        items.append(
-                            [nikola.utils.LocaleBorg().get_month_name(int(month), lang),
-                             link, count])
-                    yield self._prepare_task(kw, year, lang, None, items,
-                                             "list.tmpl",
-                                             arch[1],
-                                             arch[2])
-                #for year in years:
-                #    arch = archdata[year]
-                #    months = set([(m.split('/')[1], self.site.link("archive", m, lang), len(self.site.posts_per_month[m])) for m in self.site.posts_per_month.keys() if m.startswith(str(year))])
-                #    months = sorted(list(months), reverse=True)
-                #    items = [[nikola.utils.LocaleBorg().get_month_name(int(month), lang), link, count] for month, link, count in months]
-                #    yield self._prepare_task(kw, year, lang, None, items,
-                #                             "list.tmpl",
-                #                             arch[1],
-                #                             arch[2])
+            #else:
+            #    for year in years:
+            #        arch = archdata[year]
+            #        months = set([(m.split('/')[1], self.site.link("archive", m, lang), len(self.site.posts_per_month[m])) for m in self.site.posts_per_month.keys() if m.startswith(str(year))])
+            #        months = sorted(list(months), reverse=True)
+            #        items = [[nikola.utils.LocaleBorg().get_month_name(int(month), lang), link, count] for month, link, count in months]
+            #        yield self._prepare_task(kw, year, lang, None, items,
+            #                                 "list.tmpl",
+            #                                 arch[1],
+            #                                 arch[2])
 
             if (not kw["create_monthly_archive"]
                 and not kw["create_full_archives"]
                 and not kw["create_daily_archive"]):
                 continue  # Just to avoid nesting the other loop in this if
 
-            archdata = self.site.posts_per_month.copy()
-            yearmonths = list(archdata.keys())
+            ymarchdata = self.site.posts_per_month.copy()
+            yearmonths = list(ymarchdata.keys())
             for yearmonth in yearmonths[:]:
                 posts = self.site.posts_per_month[yearmonth]
                 # Filter untranslated posts (via Issue #1360)
@@ -387,11 +369,30 @@ class Archive(Task):
                 year, month = yearmonth.split('/')
                 title = kw["messages"][lang]["Posts for {month} {year}"].format(
                     year=year, month=nikola.utils.LocaleBorg().get_month_name(int(month), lang))
-                archdata[yearmonth] = [posts, title, None, None, None, None, None]
+                ymarchdata[yearmonth] = [posts, title, None, None, None, None, None]
             yearmonths.sort(reverse=True)
 
+            if kw["create_monthly_archive"] and not kw["create_full_archives"]:
+                for year in years:
+                    arch = archdata[year]
+                    months = []
+                    for m in yearmonths:
+                        if m.startswith(year):
+                            months.append([m.split('/')[1],
+                                           self.site.link("archive", m, lang),
+                                           len(ymarchdata[m][0])])
+                    items = []
+                    for month, link, count in months:
+                        items.append(
+                            [nikola.utils.LocaleBorg().get_month_name(int(month), lang),
+                             link, count])
+                    yield self._prepare_task(kw, year, lang, None, items,
+                                             "list.tmpl",
+                                             arch[1],
+                                             arch[2])
+
             if not kw["create_daily_archive"] or kw["create_full_archives"]:
-                yield self._generate_tasks(kw, lang, yearmonths, archdata)
+                yield self._generate_tasks(kw, lang, yearmonths, ymarchdata)
             #else:
             #    for yearmonth in yearmonths:
             #        arch = archdata[yearmonth]
@@ -402,7 +403,7 @@ class Archive(Task):
                 daysdata = {}
                 days = []
                 for yearmonth in yearmonths:
-                    posts = archdata[yearmonth][0]
+                    posts = ymarchdata[yearmonth][0]
                     year, month = yearmonth.split('/')
 
                     for p in posts:
